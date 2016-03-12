@@ -386,3 +386,42 @@ keystone_keystone_conf_overrides: {}
 keystone_keystone_default_conf_overrides: {}
 keystone_keystone_paste_ini_overrides: {}
 keystone_policy_overrides: {}
+
+keystone_service_notifier: "Restart Apache"
+keystone_generate_ssh_key: true
+keystone_service_directories:
+  - { path: "/openstack", mode: "0755", owner: "root", group: "root" }
+  - { path: "/etc/keystone" }
+  - { path: "{{ keystone_ldap_domain_config_dir }}" }
+  - { path: "/etc/keystone/ssl" }
+  - { path: "{{ keystone_fernet_tokens_key_repository }}", mode: "2750"}
+  - { path: "{{ keystone_system_user_home }}" }
+  - { path: "/var/www/cgi-bin", owner: root, group: root }
+  - { path: "/var/www/cgi-bin/keystone" }
+keystone_venv_directories:
+  - { path: "/openstack/venvs" }
+  - { path: "{{ keystone_venv_bin }}" }
+keystone_service_log_directory: "/var/log/keystone"
+keystone_pip_install_options: "{{ pip_install_options | default('') }}"
+keystone_config_template_files:
+  - src: "keystone.conf.j2"
+    dest: "/etc/keystone/keystone.conf"
+    config_overrides: "{{ keystone_keystone_conf_overrides }}"
+    config_type: "ini"
+  - src: "keystone-paste.ini.j2"
+    dest: "/etc/keystone/keystone-paste.ini"
+    config_overrides: "{{ keystone_keystone_paste_ini_overrides }}"
+    config_type: "ini"
+  - src: "policy.json.j2"
+    dest: "/etc/keystone/policy.json"
+    config_overrides: "{{ keystone_policy_overrides }}"
+    config_type: "json"
+keystone_config_immutable_files:
+  - src: "sso_callback_template.html"
+    dest: "/etc/keystone/sso_callback_template.html"
+    owner: "{{ keystone_system_user_name }}"
+    group: "{{ keystone_system_group_name }}"
+    mode: "0644"
+keystone_template_files:
+  - { src: "keystone-wsgi.py.j2", dest: "/var/www/cgi-bin/keystone/admin", mode: "0755" }
+  - { src: "keystone-wsgi.py.j2", dest: "/var/www/cgi-bin/keystone/main", mode: "0755" }

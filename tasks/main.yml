@@ -12,19 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-- name: Gather variables for each operating system
-  include_vars: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_version | lower }}.yml"
-    - "{{ ansible_distribution | lower }}.yml"
-    - "{{ ansible_os_family | lower }}.yml"
+- name: Get keystone command path
+  command: which keystone
+  register: keystone_command_path
+  when:
+    - not keystone_venv_enabled | bool
   tags:
-    - always
+    - keystone-command-bin
 
-- include: keystone_pre_install.yml
-- include: keystone_install.yml
-- include: keystone_post_install.yml
+- name: Set keystone command path
+  set_fact:
+    keystone_bin: "{{ keystone_command_path.stdout | dirname }}"
+  when:
+    - not keystone_venv_enabled | bool
+  tags:
+    - keystone-command-bin
 
 - include: keystone_key_setup.yml
   tags:
